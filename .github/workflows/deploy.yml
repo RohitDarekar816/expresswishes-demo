@@ -22,19 +22,38 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
             if [ ! -d ~/expresswishes-demo ]; then
               cd ~
               git clone https://github.com/RohitDarekar816/expresswishes-demo.git
             fi
-            cd ~/expresswishes-demo &&
-            git pull origin main &&
-            python3 -m pip install -r requirements.txt --user &&
-            pkill -f 'python3 app.py' || true &&
+            
+            cd ~/expresswishes-demo
+            git pull origin main
+            
+            if ! command -v python3 &> /dev/null; then
+              echo "python3 not found, installing..."
+              sudo apt-get update && sudo apt-get install -y python3 python3-pip
+            fi
+            
+            python3 -m pip install -r requirements.txt --user --break-system-packages
+            
+            pkill -f "python3.*app.py" || true
+            
+            cd ~/expresswishes-demo
             nohup python3 app.py > app.log 2>&1 &
-          "
+            
+            sleep 2
+            if pgrep -f "python3.*app.py" > /dev/null; then
+              echo "Application started successfully"
+            else
+              echo "Application failed to start. Check app.log"
+              cat app.log
+              exit 1
+            fi
+          '
         
       - name: Verify deployment
         run: |
-          sleep 3
-          curl -s http://${{ secrets.SERVER_HOST }}:5000/health || echo "Health check failed"
+          sleep 5
+          curl -s -f http://${{ secrets.SERVER_HOST }}:5000/health || (echo "Health check failed" && exit 1)
