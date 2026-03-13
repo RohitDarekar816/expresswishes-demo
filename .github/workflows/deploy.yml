@@ -22,37 +22,42 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            set +e
-            cd ~
-            if [ ! -d expresswishes-demo ]; then
-              git clone https://github.com/RohitDarekar816/expresswishes-demo.git
-            fi
-            
-            cd expresswishes-demo
-            git pull origin main
-            
-            sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-full
-            
-            rm -rf venv
-            python3 -m venv venv
-            
-            source venv/bin/activate
-            pip install -r requirements.txt
-            
-            pkill -f 'venv/bin/python.*app.py' || true
-            
-            nohup venv/bin/python app.py > app.log 2>&1 &
-            
-            sleep 3
-            if pgrep -f 'venv/bin/python.*app.py' > /dev/null; then
-              echo 'Application started successfully'
-            else
-              echo 'Application failed to start. Check app.log'
-              cat app.log
-              exit 1
-            fi
-          "
+          cat > /tmp/deploy.sh << 'SCRIPT'
+          #!/bin/bash
+          set +e
+          
+          cd ~
+          if [ ! -d expresswishes-demo ]; then
+            git clone https://github.com/RohitDarekar816/expresswishes-demo.git
+          fi
+          
+          cd expresswishes-demo
+          git pull origin main
+          
+          sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-full
+          
+          rm -rf venv
+          python3 -m venv venv
+          
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          pkill -f "venv/bin/python.*app.py" || true
+          
+          nohup venv/bin/python app.py > app.log 2>&1 &
+          
+          sleep 3
+          if pgrep -f "venv/bin/python.*app.py" > /dev/null; then
+            echo "Application started successfully"
+          else
+            echo "Application failed to start. Check app.log"
+            cat app.log
+            exit 1
+          fi
+          SCRIPT
+          
+          scp /tmp/deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/deploy.sh
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "bash /tmp/deploy.sh"
         
       - name: Verify deployment
         run: |
