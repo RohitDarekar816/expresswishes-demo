@@ -62,4 +62,4 @@ jobs:
       - name: Verify deployment
         run: |
           sleep 5
-          curl -s -f http://${{ secrets.SERVER_HOST }}:5000/health || (echo "Health check failed" && exit 1)
+          curl -s -f http://localhost:5000/health || (echo "Health check failed" && exit 1)
