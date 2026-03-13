@@ -23,6 +23,10 @@ jobs:
       - name: Deploy to server
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            if [ ! -d ~/expresswishes-demo ]; then
+              cd ~
+              git clone https://github.com/RohitDarekar816/expresswishes-demo.git
+            fi
             cd ~/expresswishes-demo &&
             git pull origin main &&
             pip3 install -r requirements.txt --user &&
