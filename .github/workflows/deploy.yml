@@ -22,7 +22,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
             cd ~
             if [ ! -d expresswishes-demo ]; then
               git clone https://github.com/RohitDarekar816/expresswishes-demo.git
@@ -39,19 +39,19 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
             
-            pkill -f "venv/bin/python.*app.py" || true
+            pkill -f 'venv/bin/python.*app.py' || true
             
             nohup venv/bin/python app.py > app.log 2>&1 &
             
             sleep 3
-            if pgrep -f "venv/bin/python.*app.py" > /dev/null; then
-              echo "Application started successfully"
+            if pgrep -f 'venv/bin/python.*app.py' > /dev/null; then
+              echo 'Application started successfully'
             else
-              echo "Application failed to start. Check app.log"
+              echo 'Application failed to start. Check app.log'
               cat app.log
               exit 1
             fi
-          '
+          "
         
       - name: Verify deployment
         run: |
