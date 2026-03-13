@@ -23,6 +23,7 @@ jobs:
       - name: Deploy to server
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            set +e
             cd ~
             if [ ! -d expresswishes-demo ]; then
               git clone https://github.com/RohitDarekar816/expresswishes-demo.git
