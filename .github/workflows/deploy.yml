@@ -54,12 +54,11 @@ jobs:
             cat app.log
             exit 1
           fi
+          
+          sleep 2
+          curl -s -f http://localhost:5000/health || (echo "Health check failed" && exit 1)
+          echo "Health check passed"
           SCRIPT
           
           scp /tmp/deploy.sh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/deploy.sh
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "bash /tmp/deploy.sh"
-        
-      - name: Verify deployment
-        run: |
-          sleep 5
-          curl -s -f http://localhost:5000/health || (echo "Health check failed" && exit 1)
